@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package serverudpecho;
+package clientudp;
 
 import java.awt.BorderLayout;
 import java.awt.GridLayout;
@@ -16,7 +16,6 @@ import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.SocketException;
 import java.net.UnknownHostException;
-import java.util.HashMap;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
@@ -28,38 +27,20 @@ import javax.swing.border.TitledBorder;
  *
  * @author Accoun Utente
  */
-class Clients {
-
-    int port;
-    InetAddress addr;
-    String IP_address = "127.0.0.1";
-
-    public Clients(InetAddress addr, int port) throws UnknownHostException {
-        this.port = port;
-        addr = InetAddress.getByName(IP_address);
-    }
-
-    Clients(int port) {
-        this.port = port;
-    }
-
-}
-
-public class UDPEcho extends JFrame implements ActionListener {
-
-    Clients client = new Clients(9999);
+public class ChatClient extends JFrame implements ActionListener {
 
     private JTextField toclient = new JTextField();
     private JTextArea display = new JTextArea();
-    private JButton send = new JButton("Send/Start Server");
-    DatagramSocket Client, server;
-    ServerSocket socket;
+    private JButton send = new JButton("Send/Start Client");
     byte[] buffer, buffer1;
-    HashMap<String, Clients> clients = new HashMap<String, Clients>();
+    DatagramSocket client;
+    ServerSocket socket;
     String username;
     String messaggio;
+    String IP_address = "127.0.0.1";
+    InetAddress address = InetAddress.getByName(IP_address);
 
-    public UDPEcho(int port) throws SocketException, UnknownHostException {
+    public ChatClient() throws SocketException, UnknownHostException {
         JPanel input = new JPanel();
         input.setLayout(new BorderLayout());
         input.setBorder(new TitledBorder("Enter Message"));
@@ -81,21 +62,20 @@ public class UDPEcho extends JFrame implements ActionListener {
         this.getContentPane().add(gabung, BorderLayout.NORTH);
         send.addActionListener(this);
 
-        setTitle("Chat Server");
+        setTitle("Chat Client");
         setSize(500, 300);
         setVisible(true);
-        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        
+
         new Thread(new Runnable() {
             @Override
             public void run() {
                 try {
-                    server = new DatagramSocket();
+                    client = new DatagramSocket();
                     socket = new ServerSocket();
                     while (true) {
+                        DatagramPacket datapack = new DatagramPacket(buffer1, buffer1.length);
                         socket.accept();
-                        DatagramPacket datapack = new DatagramPacket(buffer, buffer.length);
-                        server.receive(datapack);
+                        client.receive(datapack);
                         String msg = new String(datapack.getData());
                         display.append("\nServer:" + msg);
                     }
@@ -103,7 +83,7 @@ public class UDPEcho extends JFrame implements ActionListener {
                 }
             }
         }).start();
-                
+
     }
 
     @Override
@@ -111,9 +91,9 @@ public class UDPEcho extends JFrame implements ActionListener {
         if (e.getSource().equals(send)) {
             try {
                 String message = toclient.getText();
-                buffer = message.getBytes();
-                DatagramPacket sendpack = new DatagramPacket(buffer, buffer.length, InetAddress.getLocalHost() , 9999);
-                server.send(sendpack);
+                buffer1 = message.getBytes();
+                DatagramPacket sendpack = new DatagramPacket(buffer1, buffer1.length, InetAddress.getLocalHost(), 9998);
+                client.send(sendpack);
                 display.append("\nMyself:" + message);
                 toclient.setText("");
             } catch (IOException ex) {
@@ -121,4 +101,5 @@ public class UDPEcho extends JFrame implements ActionListener {
             }
         }
     }
+
 }

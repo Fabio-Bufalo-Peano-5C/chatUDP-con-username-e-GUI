@@ -7,6 +7,7 @@ package serverudpecho;
 
 import java.io.IOException;
 import java.net.SocketException;
+import java.net.UnknownHostException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -19,21 +20,20 @@ public class ServerUDPEcho {
     /**
      * @param args the command line arguments
      */
-    public static void main(String[] args) throws IOException, InterruptedException {
-        int c;
-        Thread thread;
-        try {
+    public static void main(String[] args) throws IOException, InterruptedException {     
             // TODO code application logic here
-            UDPEcho echoServer= new UDPEcho(5000);
-            thread= new Thread(echoServer);
-            thread.start();
-            c=System.in.read();
-            thread.interrupt();
-            thread.join();
+            new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        new UDPEcho(7);
+                    } catch (SocketException | UnknownHostException ex) {
+                        Logger.getLogger(ServerUDPEcho.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+                }
+            }.run();
             System.out.println("Sono il main!");
-        } catch (SocketException ex) {
-            Logger.getLogger(ServerUDPEcho.class.getName()).log(Level.SEVERE, null, ex);
-        }
+        
     }
     
 }
