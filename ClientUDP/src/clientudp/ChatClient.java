@@ -13,7 +13,6 @@ import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
-import java.net.ServerSocket;
 import java.net.SocketException;
 import java.net.UnknownHostException;
 import javax.swing.JButton;
@@ -34,7 +33,6 @@ public class ChatClient extends JFrame implements ActionListener {
     private JButton send = new JButton("Send/Start Client");
     byte[] buffer, buffer1;
     DatagramSocket client;
-    ServerSocket socket;
     String username;
     String messaggio;
     String IP_address = "127.0.0.1";
@@ -52,14 +50,14 @@ public class ChatClient extends JFrame implements ActionListener {
         output.setBorder(new TitledBorder("Conversation"));
         output.add(display, BorderLayout.CENTER);
 
-        JPanel gabung = new JPanel();
-        gabung.setLayout(new GridLayout(2, 1));
-        gabung.add(input);
-        gabung.add(output);
+        JPanel pnl = new JPanel();
+        pnl.setLayout(new GridLayout(2, 1));
+        pnl.add(input);
+        pnl.add(output);
         buffer = new byte[1024];
         buffer1 = new byte[1024];
 
-        this.getContentPane().add(gabung, BorderLayout.NORTH);
+        this.getContentPane().add(pnl, BorderLayout.NORTH);
         send.addActionListener(this);
 
         setTitle("Chat Client");
@@ -71,10 +69,8 @@ public class ChatClient extends JFrame implements ActionListener {
             public void run() {
                 try {
                     client = new DatagramSocket();
-                    socket = new ServerSocket();
                     while (true) {
                         DatagramPacket datapack = new DatagramPacket(buffer1, buffer1.length);
-                        socket.accept();
                         client.receive(datapack);
                         String msg = new String(datapack.getData());
                         display.append("\nServer:" + msg);
@@ -92,7 +88,7 @@ public class ChatClient extends JFrame implements ActionListener {
             try {
                 String message = toclient.getText();
                 buffer1 = message.getBytes();
-                DatagramPacket sendpack = new DatagramPacket(buffer1, buffer1.length, InetAddress.getLocalHost(), 9998);
+                DatagramPacket sendpack = new DatagramPacket(buffer1, buffer1.length, InetAddress.getLoopbackAddress() , 9999);
                 client.send(sendpack);
                 display.append("\nMyself:" + message);
                 toclient.setText("");
