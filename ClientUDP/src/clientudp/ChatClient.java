@@ -5,7 +5,6 @@
  */
 package clientudp;
 
-import java.awt.BorderLayout;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -18,9 +17,9 @@ import java.net.UnknownHostException;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
-import javax.swing.border.TitledBorder;
 
 /**
  *
@@ -29,37 +28,38 @@ import javax.swing.border.TitledBorder;
 public class ChatClient extends JFrame implements ActionListener {
 
     private JTextField toclient = new JTextField();
+    private JTextField username = new JTextField();
     private JTextArea display = new JTextArea();
     private JButton send = new JButton("Send/Start Client");
     byte[] buffer, buffer1;
     DatagramSocket client;
-    String username;
     String messaggio;
     String IP_address = "127.0.0.1";
     InetAddress address = InetAddress.getByName(IP_address);
 
     public ChatClient() throws SocketException, UnknownHostException {
         JPanel input = new JPanel();
-        input.setLayout(new BorderLayout());
-        input.setBorder(new TitledBorder("Enter Message"));
-        input.add(toclient, BorderLayout.CENTER);
-        input.add(send, BorderLayout.EAST);
+        input.setLayout(new GridLayout(1, 3));
+        input.add(username);
+        input.add(toclient);
+        input.add(send);
 
         JPanel output = new JPanel();
-        output.setLayout(new BorderLayout());
-        output.setBorder(new TitledBorder("Conversation"));
-        output.add(display, BorderLayout.CENTER);
+        output.setLayout(new GridLayout(1, 1));
+        output.add(display);
 
         JPanel pnl = new JPanel();
-        pnl.setLayout(new GridLayout(2, 1));
-        pnl.add(input);
+        JScrollPane scroll = new JScrollPane(pnl);
+        pnl.setLayout(new GridLayout(2, 3));
+        this.setLayout(new GridLayout(2, 1));
+        this.add(input);
         pnl.add(output);
         buffer = new byte[1024];
         buffer1 = new byte[1024];
-
-        this.getContentPane().add(pnl, BorderLayout.NORTH);
+        this.add(scroll);
         send.addActionListener(this);
-
+        setDefaultCloseOperation(EXIT_ON_CLOSE);
+        pack();
         setTitle("Chat Client");
         setSize(500, 300);
         setVisible(true);
@@ -73,7 +73,7 @@ public class ChatClient extends JFrame implements ActionListener {
                         DatagramPacket datapack = new DatagramPacket(buffer1, buffer1.length);
                         client.receive(datapack);
                         String msg = new String(datapack.getData());
-                        display.append("\nServer:" + msg);
+                        display.append("\nServer:" + msg + "\n");
                     }
                 } catch (Exception e) {
                 }
@@ -87,10 +87,12 @@ public class ChatClient extends JFrame implements ActionListener {
         if (e.getSource().equals(send)) {
             try {
                 String message = toclient.getText();
-                buffer1 = message.getBytes();
-                DatagramPacket sendpack = new DatagramPacket(buffer1, buffer1.length, InetAddress.getLoopbackAddress() , 9999);
+                String username1 = username.getText();
+                String msgFin = message + " " + username1;
+                buffer1 = msgFin.getBytes();
+                DatagramPacket sendpack = new DatagramPacket(buffer1, buffer1.length, InetAddress.getLoopbackAddress(), 9999);
                 client.send(sendpack);
-                display.append("\nMyself:" + message);
+                display.append("\nHo inviato da " + username1 + " il messaggio: " + message + "\n");
                 toclient.setText("");
             } catch (IOException ex) {
                 ex.printStackTrace();
