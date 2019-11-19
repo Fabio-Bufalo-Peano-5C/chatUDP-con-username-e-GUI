@@ -6,7 +6,6 @@
 package serverudpecho;
 
 import java.awt.BorderLayout;
-import java.awt.GridBagLayout;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -16,12 +15,11 @@ import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.SocketException;
 import java.net.UnknownHostException;
+import java.util.ArrayList;
 import java.util.HashMap;
-import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.JTextArea;
-import javax.swing.JTextField;
 import javax.swing.border.TitledBorder;
 
 /**
@@ -48,43 +46,33 @@ class Clients {
 public class UDPEcho extends JFrame implements ActionListener {
 
     Clients client = new Clients(InetAddress.getByName("127.0.0.1"), 9999);
-
-    private JTextField toclient = new JTextField();
     private JTextArea display = new JTextArea();
-    private JButton send = new JButton("Send/Start Server");
     DatagramSocket Client, server;
-    byte[] buffer, buffer1;
-    HashMap<String, Clients> clients = new HashMap<String, Clients>();
-    String username;
+    byte[] buffer;
+    ArrayList<String> mex = new ArrayList<>();
     String messaggio;
+    private HashMap<InetAddress, Integer> clientPort = new HashMap<>();
 
     public UDPEcho(int port) throws SocketException, UnknownHostException {
-        JPanel input = new JPanel();
-        input.setLayout(new BorderLayout());
-        input.setBorder(new TitledBorder("Enter Message"));
-        input.add(toclient, BorderLayout.CENTER);
-        input.add(send, BorderLayout.EAST);
+        display.setEditable(false);
 
         JPanel output = new JPanel();
         output.setLayout(new BorderLayout());
         output.setBorder(new TitledBorder("Conversation"));
-        output.add(display, BorderLayout.CENTER);
+        output.add(display, BorderLayout.NORTH);
 
         JPanel pnl = new JPanel();
-        pnl.setLayout(new GridLayout(2 , 1));
-        pnl.add(input);
+        pnl.setLayout(new GridLayout(1, 1));
         pnl.add(output);
         buffer = new byte[1024];
-        buffer1 = new byte[1024];
 
-        this.getContentPane().add(pnl, BorderLayout.NORTH);
-        send.addActionListener(this);
+        this.getContentPane().add(pnl, BorderLayout.CENTER);
 
         setTitle("Chat Server");
         setSize(500, 300);
         setVisible(true);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        
+
         new Thread(new Runnable() {
             @Override
             public void run() {
@@ -94,28 +82,38 @@ public class UDPEcho extends JFrame implements ActionListener {
                         DatagramPacket datapack = new DatagramPacket(buffer, buffer.length);
                         server.receive(datapack);
                         String msg = new String(datapack.getData());
-                        display.append("\nServer:" + msg);
+                        display.append("\nHo ricevuto:" + msg + " da: " + datapack.getAddress() + "" + datapack.getPort());
                         server.send(new DatagramPacket(datapack.getData(), datapack.getLength(), datapack.getAddress(), datapack.getPort()));
+                        display.append("\nHo inviato:" + msg + " a: " + datapack.getAddress() + "" + datapack.getPort());
+                        if (!clientPort.containsKey(datapack.getAddress()) && !clientPort.containsValue(datapack.getPort())) {
+                            display.append("Non ho trovato l'ip, lo salvo!");
+                            clientPort.put(datapack.getAddress(), datapack.getPort());
+                            if (mex.size() > 10) {
+                                for (int i = mex.size() - 11; i < mex.size(); i++) {
+                                    byte[] buff = mex.get(i).getBytes();
+                                    DatagramPacket ultimiMSG = new DatagramPacket(buff, buff.length, datapack.getAddress(), datapack.getPort());
+                                    server.send(ultimiMSG);
+                                    display.append("\nHo inviato:" + new String(buff) + " a: " + datapack.getAddress() + " " + datapack.getPort());
+                                }
+                            } else {
+                                for (int i = 0; i < mex.size(); i++) {
+                                    byte[] buff = mex.get(i).getBytes();
+                                    DatagramPacket ultimiMSG = new DatagramPacket(buff, buff.length, datapack.getAddress(), datapack.getPort());
+                                    server.send(ultimiMSG);
+                                    display.append("\nHo inviato:" + new String(buff) + " a: " + datapack.getAddress() + " " + datapack.getPort());
+                                }
+                            }
+                        }
+                        mex.add(msg);
                     }
-                } catch (IOException e) {
+                } catch (IOException ex) {
                 }
             }
         }).start();
-                
+
     }
 
     @Override
     public void actionPerformed(ActionEvent e) {
-        if (e.getSource().equals(send)) {
-            try {
-                String message = toclient.getText();
-                buffer = message.getBytes();
-                DatagramPacket sendpack = new DatagramPacket(buffer, buffer.length, InetAddress.getLoopbackAddress() , 9998);
-                server.send(sendpack);
-                display.append("\nMyself:" + message);
-                toclient.setText("");
-            } catch (IOException ex) {
-            }
-        }
     }
 }
