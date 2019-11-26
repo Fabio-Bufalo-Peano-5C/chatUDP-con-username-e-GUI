@@ -8,6 +8,10 @@ package clientudp;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
@@ -25,7 +29,7 @@ import javax.swing.JTextField;
  *
  * @author Accoun Utente
  */
-public class ChatClient extends JFrame implements ActionListener {
+public class ChatClient extends JFrame implements ActionListener, MouseListener, FocusListener {
 
     private JTextField toclient = new JTextField();
     private JTextField username = new JTextField();
@@ -41,7 +45,9 @@ public class ChatClient extends JFrame implements ActionListener {
         JPanel input = new JPanel();
         input.setLayout(new GridLayout(1, 3));
         input.add(username);
+        username.setText("Username");
         input.add(toclient);
+        toclient.setText("Messaggio");
         input.add(send);
 
         JPanel output = new JPanel();
@@ -88,16 +94,51 @@ public class ChatClient extends JFrame implements ActionListener {
             try {
                 String message = toclient.getText();
                 String username1 = username.getText();
-                String msgFin = message + " " + username1;
+                String msgFin = message + "/" + username1;
                 buffer1 = msgFin.getBytes();
                 DatagramPacket sendpack = new DatagramPacket(buffer1, buffer1.length, InetAddress.getLoopbackAddress(), 9999);
                 client.send(sendpack);
                 display.append("\nHo inviato da " + username1 + " il messaggio: " + message + "\n");
                 toclient.setText("");
+                username.setText(username1);
             } catch (IOException ex) {
                 ex.printStackTrace();
             }
         }
+    }
+
+    @Override
+    public void mouseClicked(MouseEvent e) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public void mousePressed(MouseEvent e) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public void mouseReleased(MouseEvent e) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public void mouseEntered(MouseEvent e) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public void mouseExited(MouseEvent e) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+    
+    public void focusGained(FocusEvent e){
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public void focusLost(FocusEvent e) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
 }
