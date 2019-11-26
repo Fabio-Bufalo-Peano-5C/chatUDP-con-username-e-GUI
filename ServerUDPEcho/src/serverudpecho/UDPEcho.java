@@ -17,6 +17,7 @@ import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.StringTokenizer;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.JTextArea;
@@ -80,11 +81,14 @@ public class UDPEcho extends JFrame implements ActionListener {
                     server = new DatagramSocket(9999);
                     while (true) {
                         DatagramPacket datapack = new DatagramPacket(buffer, buffer.length);
-                        server.receive(datapack);
+                        server.receive(datapack);                       
                         String msg = new String(datapack.getData());
-                        display.append("\nHo ricevuto:" + msg + " da: " + datapack.getAddress() + "" + datapack.getPort());
+                        StringTokenizer st = new StringTokenizer(msg, "/");
+                        String messaggio = st.nextToken();
+                        String user = st.nextToken();
+                        display.append("\nHo ricevuto:" + messaggio + " dall'utente " + user + " con l'IP " + datapack.getAddress() + " e la porta " + datapack.getPort());
                         server.send(new DatagramPacket(datapack.getData(), datapack.getLength(), datapack.getAddress(), datapack.getPort()));
-                        display.append("\nHo inviato:" + msg + " a: " + datapack.getAddress() + "" + datapack.getPort());
+                        display.append("\nHo inviato:" + messaggio + " all'utente " + user + " che ha l'IP " + datapack.getAddress() + " e la porta " + datapack.getPort());
                         if (!clientPort.containsKey(datapack.getAddress()) && !clientPort.containsValue(datapack.getPort())) {
                             display.append("Non ho trovato l'ip, lo salvo!");
                             clientPort.put(datapack.getAddress(), datapack.getPort());
@@ -104,7 +108,7 @@ public class UDPEcho extends JFrame implements ActionListener {
                                 }
                             }
                         }
-                        mex.add(msg);
+                        mex.add(messaggio);
                     }
                 } catch (IOException ex) {
                 }
